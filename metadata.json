@@ -1,0 +1,6 @@
+{
+  "name": "OSI Stack Lab",
+  "description": "An interactive OSI 7-layer networking lab where students match each layer with its address type, protocol data unit (PDU), and networking devices, plus explore live packet encapsulation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
