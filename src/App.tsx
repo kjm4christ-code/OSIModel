@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MatchingLab } from './components/MatchingLab';
 import { QuizMode } from './components/QuizMode';
 import { EncapsulationFlow } from './components/EncapsulationFlow';
@@ -6,9 +6,32 @@ import { ReferenceMatrix } from './components/ReferenceMatrix';
 
 type ActiveView = 'match' | 'quiz' | 'flow' | 'reference';
 
+const VALID_VIEWS: ActiveView[] = ['match', 'quiz', 'flow', 'reference'];
+
+function getViewFromHash(): ActiveView {
+  if (typeof window === 'undefined') return 'match';
+  const raw = window.location.hash.replace(/^#/, '') as ActiveView;
+  return VALID_VIEWS.includes(raw) ? raw : 'match';
+}
+
 export default function App() {
-  const [activeView, setActiveView] = useState<ActiveView>('match');
+  const [activeView, setActiveView] = useState<ActiveView>(() => getViewFromHash());
   const [resetSignal, setResetSignal] = useState(0);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      setActiveView(getViewFromHash());
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  function navigateTo(view: ActiveView) {
+    setActiveView(view);
+    if (typeof window !== 'undefined' && window.location.hash !== `#${view}`) {
+      window.history.replaceState(null, '', `#${view}`);
+    }
+  }
 
   function handleResetLab() {
     setResetSignal((n) => n + 1);
@@ -20,10 +43,10 @@ export default function App() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-8 px-4 py-4 sm:px-6 lg:px-8">
           <a
-            href="#workspace"
+            href="#match"
             onClick={(e) => {
               e.preventDefault();
-              setActiveView('match');
+              navigateTo('match');
             }}
             className="font-display text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
           >
@@ -36,7 +59,7 @@ export default function App() {
           >
             <button
               type="button"
-              onClick={() => setActiveView('match')}
+              onClick={() => navigateTo('match')}
               className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'match'
                   ? 'border-b-2 border-sky-600 text-slate-900 font-semibold'
@@ -47,7 +70,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('quiz')}
+              onClick={() => navigateTo('quiz')}
               className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'quiz'
                   ? 'border-b-2 border-sky-600 text-slate-900 font-semibold'
@@ -58,7 +81,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('flow')}
+              onClick={() => navigateTo('flow')}
               className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'flow'
                   ? 'border-b-2 border-sky-600 text-slate-900 font-semibold'
@@ -69,7 +92,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('reference')}
+              onClick={() => navigateTo('reference')}
               className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'reference'
                   ? 'border-b-2 border-sky-600 text-slate-900 font-semibold'
@@ -119,7 +142,7 @@ export default function App() {
               type="button"
               role="tab"
               aria-selected={activeView === 'match'}
-              onClick={() => setActiveView('match')}
+              onClick={() => navigateTo('match')}
               className={`rounded-md px-3.5 py-2 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'match'
                   ? 'bg-white text-slate-900 shadow-xs'
@@ -132,7 +155,7 @@ export default function App() {
               type="button"
               role="tab"
               aria-selected={activeView === 'quiz'}
-              onClick={() => setActiveView('quiz')}
+              onClick={() => navigateTo('quiz')}
               className={`rounded-md px-3.5 py-2 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'quiz'
                   ? 'bg-white text-slate-900 shadow-xs'
@@ -145,7 +168,7 @@ export default function App() {
               type="button"
               role="tab"
               aria-selected={activeView === 'flow'}
-              onClick={() => setActiveView('flow')}
+              onClick={() => navigateTo('flow')}
               className={`rounded-md px-3.5 py-2 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'flow'
                   ? 'bg-white text-slate-900 shadow-xs'
@@ -158,7 +181,7 @@ export default function App() {
               type="button"
               role="tab"
               aria-selected={activeView === 'reference'}
-              onClick={() => setActiveView('reference')}
+              onClick={() => navigateTo('reference')}
               className={`rounded-md px-3.5 py-2 text-xs font-semibold whitespace-nowrap shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 ${
                 activeView === 'reference'
                   ? 'bg-white text-slate-900 shadow-xs'
@@ -173,14 +196,14 @@ export default function App() {
         {/* Active View */}
         {activeView === 'match' && (
           <MatchingLab
-            onNavigateToFlow={() => setActiveView('flow')}
-            onNavigateToQuiz={() => setActiveView('quiz')}
+            onNavigateToFlow={() => navigateTo('flow')}
+            onNavigateToQuiz={() => navigateTo('quiz')}
             resetSignal={resetSignal}
           />
         )}
         {activeView === 'quiz' && (
           <QuizMode
-            onNavigateToReference={() => setActiveView('reference')}
+            onNavigateToReference={() => navigateTo('reference')}
             resetSignal={resetSignal}
           />
         )}
@@ -195,28 +218,28 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
-              onClick={() => setActiveView('match')}
+              onClick={() => navigateTo('match')}
               className="hover:text-slate-900 transition-colors"
             >
               Match Challenge
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('quiz')}
+              onClick={() => navigateTo('quiz')}
               className="hover:text-slate-900 transition-colors"
             >
               Quiz Mode
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('flow')}
+              onClick={() => navigateTo('flow')}
               className="hover:text-slate-900 transition-colors"
             >
               Encapsulation Flow
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('reference')}
+              onClick={() => navigateTo('reference')}
               className="hover:text-slate-900 transition-colors"
             >
               Study Reference
